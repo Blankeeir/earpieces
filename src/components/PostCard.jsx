@@ -14,21 +14,42 @@ export default function PostCard({ post }) {
       className="card p-0 overflow-hidden group"
     >
       <Link to={`/post/${post.id}`}>
-        <div className="relative aspect-video bg-gray-100 overflow-hidden">
+        <div className="relative aspect-video bg-gray-100 overflow-hidden rounded-t-xl">
           {cover ? (
             <img
               src={cover}
               alt={post.model || post.brand}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
+              onError={(e) => {
+                e.target.style.display = 'none'
+                e.target.nextElementSibling.style.display = 'flex'
+              }}
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">No photo</div>
+          ) : null}
+          {!cover && (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              No photo
+            </div>
           )}
-          <div className="absolute top-2 left-2 badge bg-white/80">{post.brand}</div>
-          <div className={`absolute top-2 right-2 badge ${intentBadge(post.intention)}`}>
+          <div 
+            className="w-full h-full flex items-center justify-center text-gray-400" 
+            style={{ display: 'none' }}
+          >
+            Image unavailable
+          </div>
+          
+          <div className="absolute top-2 left-2 badge bg-white/90 backdrop-blur-sm">{post.brand}</div>
+          <div className={`absolute top-2 right-2 badge ${intentBadge(post.intention)} backdrop-blur-sm`}>
             {post.intentionLabel}
           </div>
+          
+          {/* Image count indicator */}
+          {post.imageUrls && post.imageUrls.length > 1 && (
+            <div className="absolute bottom-2 right-2 badge bg-black/50 text-white text-xs">
+              {post.imageUrls.length} photos
+            </div>
+          )}
         </div>
       </Link>
 

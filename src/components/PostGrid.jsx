@@ -14,18 +14,41 @@ export default function PostGrid({ selectedBrand }) {
     setLoading(true)
     try {
       const baseRef = collection(db, 'posts')
-      const clauses = [orderBy('createdAt', 'desc'), limit(12)]
-      if (selectedBrand && selectedBrand !== 'All') {
-        clauses.unshift(where('brand', '==', selectedBrand))
+      const isFiltered = selectedBrand && selectedBrand !== 'All'
+      const commonLimit = limit(12)
+
+      // Attempt indexed query (brand + orderBy createdAt). If index missing, fallback.
+      try {
+        const clauses = isFiltered
+          ? [where('brand', '==', selectedBrand), orderBy('createdAt', 'desc'), commonLimit]
+          : [orderBy('createdAt', 'desc'), commonLimit]
+        if (last && !reset) clauses.push(startAfter(last))
+        const q = query(baseRef, ...clauses)
+        const snap = await getDocs(q)
+        const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        setLast(snap.docs[snap.docs.length - 1])
+        if (reset) setPosts(items)
+        else setPosts(prev => [...prev, ...items])
+        setHasMore(items.length === 12)
+      } catch (err) {
+        // Fallback when composite index is missing: drop orderBy and sort client-side.
+        console.warn('[PostGrid] Indexed query failed; falling back without orderBy', err?.code || err)
+        const clauses = isFiltered ? [where('brand', '==', selectedBrand), commonLimit] : [commonLimit]
+        if (last && !reset) clauses.push(startAfter(last))
+        const q = query(baseRef, ...clauses)
+        const snap = await getDocs(q)
+        let items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        // Client-side sort by createdAt desc
+        items.sort((a, b) => {
+          const ad = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt || 0)
+          const bd = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt || 0)
+          return bd - ad
+        })
+        setLast(snap.docs[snap.docs.length - 1])
+        if (reset) setPosts(items)
+        else setPosts(prev => [...prev, ...items])
+        setHasMore(items.length === 12)
       }
-      if (last && !reset) clauses.push(startAfter(last))
-      const q = query(baseRef, ...clauses)
-      const snap = await getDocs(q)
-      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      setLast(snap.docs[snap.docs.length - 1])
-      if (reset) setPosts(items)
-      else setPosts(prev => [...prev, ...items])
-      setHasMore(items.length === 12)
     } finally {
       setLoading(false)
     }
@@ -33,6 +56,7 @@ export default function PostGrid({ selectedBrand }) {
 
   useEffect(() => {
     setLast(null)
+    setPosts([])
     load(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedBrand])

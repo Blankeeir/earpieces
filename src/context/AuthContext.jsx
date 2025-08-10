@@ -24,32 +24,35 @@ export function AuthProvider({ children }) {
     return () => unsub()
   }, [])
 
-  const signInGoogle = async () => {
+  const signInGoogle = async (onSuccess) => {
     try {
       await signInWithPopup(auth, googleProvider)
       toast.success('Signed in with Google')
+      if (onSuccess) onSuccess()
     } catch (e) {
       console.error(e)
       toast.error(e.message)
     }
   }
 
-  const signInEmail = async (email, password) => {
+  const signInEmail = async (email, password, onSuccess) => {
     try {
       await signInWithEmailAndPassword(auth, email, password)
       toast.success('Signed in')
+      if (onSuccess) onSuccess()
     } catch (e) {
       toast.error(e.message)
     }
   }
 
-  const signUpEmail = async (email, password, displayName) => {
+  const signUpEmail = async (email, password, displayName, onSuccess) => {
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password)
       if (displayName) {
         await updateProfile(cred.user, { displayName })
       }
       toast.success('Welcome!')
+      if (onSuccess) onSuccess()
     } catch (e) {
       toast.error(e.message)
     }

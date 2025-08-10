@@ -5,7 +5,7 @@ import { MdEmail } from 'react-icons/md'
 import { FcGoogle } from 'react-icons/fc'
 
 export default function AuthModal({ open, onClose }) {
-  const { signInGoogle, signInEmail, signUpEmail } = useAuth()
+  const { signInGoogle, signInEmail, signUpEmail, user } = useAuth()
   const [tab, setTab] = useState('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -16,6 +16,13 @@ export default function AuthModal({ open, onClose }) {
       setEmail(''); setPassword(''); setDisplayName(''); setTab('signin')
     }
   }, [open])
+
+  // Auto-close modal when user successfully signs in
+  useEffect(() => {
+    if (user && open) {
+      onClose()
+    }
+  }, [user, open, onClose])
 
   return (
     <AnimatePresence>
@@ -43,11 +50,11 @@ export default function AuthModal({ open, onClose }) {
               <input className="input" placeholder="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
               <input className="input" placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
               {tab === 'signin' ? (
-                <button className="btn btn-primary w-full" onClick={() => signInEmail(email, password)}>
+                <button className="btn btn-primary w-full" onClick={() => signInEmail(email, password, onClose)}>
                   <MdEmail className="mr-2" /> Sign in with Email
                 </button>
               ) : (
-                <button className="btn btn-primary w-full" onClick={() => signUpEmail(email, password, displayName)}>
+                <button className="btn btn-primary w-full" onClick={() => signUpEmail(email, password, displayName, onClose)}>
                   <MdEmail className="mr-2" /> Create account
                 </button>
               )}
@@ -55,7 +62,7 @@ export default function AuthModal({ open, onClose }) {
                 <span className="text-xs text-gray-500 bg-white px-2 relative z-10">or</span>
                 <div className="absolute left-0 right-0 top-1/2 h-px bg-gray-200 -z-0"></div>
               </div>
-              <button className="btn btn-outline w-full" onClick={signInGoogle}>
+              <button className="btn btn-outline w-full" onClick={() => signInGoogle(onClose)}>
                 <FcGoogle className="mr-2" /> Continue with Google
               </button>
             </div>

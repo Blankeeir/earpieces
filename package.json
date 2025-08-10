@@ -11,9 +11,11 @@
     "deploy:preview": "npm run build && firebase hosting:channel:deploy preview"
   },
   "dependencies": {
+    "browser-image-compression": "^2.0.2",
     "canvas-confetti": "^1.9.3",
     "firebase": "^10.14.1",
     "framer-motion": "^11.0.0",
+    "heic2any": "^0.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",

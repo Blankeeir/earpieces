@@ -5,6 +5,7 @@ import { addDoc, collection, doc, serverTimestamp, updateDoc } from 'firebase/fi
 import { db, storage } from '../firebase.js'
 import { BRANDS } from '../utils/categories.js'
 import { INTENTS } from '../utils/intents.js'
+import ImageUploader from './ImageUploader.jsx'
 import toast from 'react-hot-toast'
 import confetti from 'canvas-confetti'
 import { motion } from 'framer-motion'
@@ -27,7 +28,7 @@ export default function PostForm({ onCreated }) {
     contactInstagram: '',
     location: 'Singapore',
   })
-  const [files, setFiles] = useState([])
+  const [images, setImages] = useState([])
   const [submitting, setSubmitting] = useState(false)
 
   const onChange = (key, val) => setData((d) => ({ ...d, [key]: val }))
@@ -44,7 +45,7 @@ export default function PostForm({ onCreated }) {
     try {
       console.debug('[PostForm] Submit start', {
         userId: user?.uid,
-        filesCount: files?.length || 0,
+        imagesCount: images?.length || 0,
         projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
         storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
       })
@@ -80,38 +81,42 @@ export default function PostForm({ onCreated }) {
         bucketFromEnv: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
         bucketFromAppOptions: storage?.app?.options?.storageBucket,
       })
-      for (const f of files.slice(0, 6)) {
+      
+      for (const imageObj of images.slice(0, 6)) {
         try {
+          const file = imageObj.file
           console.debug('[PostForm] Upload start', {
-            fileName: f?.name,
-            fileSize: f?.size,
+            fileName: file?.name,
+            fileSize: file?.size,
             postId: refDoc.id,
           })
-          const storageRef = ref(storage, `postImages/${user.uid}/${refDoc.id}/${f.name}`)
-          const uploadTask = uploadBytesResumable(storageRef, f, { contentType: f?.type })
+          const storageRef = ref(storage, `postImages/${user.uid}/${refDoc.id}/${file.name}`)
+          const uploadTask = uploadBytesResumable(storageRef, file, { contentType: file?.type })
+          
           await new Promise((resolve, reject) => {
             uploadTask.on('state_changed', (snapshot) => {
               const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
               console.debug('[PostForm] Upload progress', {
-                fileName: f?.name,
+                fileName: file?.name,
                 state: snapshot.state,
                 progress,
               })
             }, (error) => {
               console.error('[PostForm] Upload error', {
-                fileName: f?.name,
+                fileName: file?.name,
                 code: error?.code,
                 message: error?.message,
               })
               reject(error)
             }, () => resolve())
           })
+          
           const url = await getDownloadURL(storageRef)
-          console.debug('[PostForm] Upload complete; download URL obtained', { fileName: f?.name, url })
+          console.debug('[PostForm] Upload complete; download URL obtained', { fileName: file?.name, url })
           urls.push(url)
         } catch (err) {
           console.error('[PostForm] Skipping file due to error', {
-            fileName: f?.name,
+            fileName: imageObj?.file?.name,
             code: err?.code,
             message: err?.message,
           })

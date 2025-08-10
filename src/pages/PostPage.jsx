@@ -7,6 +7,7 @@ import { timeAgo } from '../utils/format.js'
 import { intentBadge } from '../utils/intents.js'
 import ReportModal from '../components/ReportModal.jsx'
 import PostReactions from '../components/PostReactions.jsx'
+import ImageGallery from '../components/ImageGallery.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { motion } from 'framer-motion'
 
@@ -36,18 +37,7 @@ export default function PostPage() {
       <div className="glass rounded-2xl p-4 sm:p-6 my-6">
         <div className="grid lg:grid-cols-2 gap-6">
           <div>
-            {images.length > 0 ? (
-              <div className="space-y-3">
-                <img src={images[0]} alt={post.model} className="w-full rounded-xl object-cover" />
-                <div className="grid grid-cols-4 gap-2">
-                  {images.slice(1).map((u, i) => (
-                    <img key={i} src={u} alt={'photo ' + (i+2)} className="w-full h-24 object-cover rounded-lg" />
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="w-full aspect-video bg-gray-100 rounded-xl flex items-center justify-center text-gray-400">No photos</div>
-            )}
+            <ImageGallery images={images} title={post.model || post.brand} />
           </div>
           <div>
             <div className="flex items-center justify-between">
