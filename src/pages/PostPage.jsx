@@ -6,6 +6,7 @@ import Spinner from '../components/Spinner.jsx'
 import { timeAgo } from '../utils/format.js'
 import { intentBadge } from '../utils/intents.js'
 import ReportModal from '../components/ReportModal.jsx'
+import PostReactions from '../components/PostReactions.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { motion } from 'framer-motion'
 
@@ -79,6 +80,8 @@ export default function PostPage() {
               </div>
             </div>
 
+            <PostReactions postId={post.id} />
+            
             <div className="mt-6 flex gap-2">
               <motion.button whileTap={{ scale: 0.98 }} className="btn btn-outline" onClick={() => setReportOpen(true)}>
                 Report

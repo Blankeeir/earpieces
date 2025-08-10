@@ -75,6 +75,11 @@ export default function PostForm({ onCreated }) {
 
       // 2) Upload images (if any) then update doc
       let urls = []
+      let failures = 0
+      console.debug('[PostForm] Storage bucket (resolved)', {
+        bucketFromEnv: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+        bucketFromAppOptions: storage?.app?.options?.storageBucket,
+      })
       for (const f of files.slice(0, 6)) {
         try {
           console.debug('[PostForm] Upload start', {
@@ -83,7 +88,7 @@ export default function PostForm({ onCreated }) {
             postId: refDoc.id,
           })
           const storageRef = ref(storage, `postImages/${user.uid}/${refDoc.id}/${f.name}`)
-          const uploadTask = uploadBytesResumable(storageRef, f)
+          const uploadTask = uploadBytesResumable(storageRef, f, { contentType: f?.type })
           await new Promise((resolve, reject) => {
             uploadTask.on('state_changed', (snapshot) => {
               const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
@@ -110,9 +115,17 @@ export default function PostForm({ onCreated }) {
             code: err?.code,
             message: err?.message,
           })
+          failures += 1
         }
       }
+      console.debug('[PostForm] Uploads finished', { successCount: urls.length, failureCount: failures })
       await updateDoc(refDoc, { imageUrls: urls })
+      if (failures > 0) {
+        toast.error(`${failures} image${failures > 1 ? 's' : ''} failed to upload`)
+      }
+      if (urls.length === 0) {
+        toast.error('No images were uploaded. Please try again.')
+      }
 
       // confetti!
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } })

@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "earpieces-e9378"
-  }
+    "default": "earpieces-e9378",
+    "earpieces": "earpieces-e9378"
+  },
+  "targets": {},
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
 }

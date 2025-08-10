@@ -4,6 +4,7 @@ import Navbar from './components/Navbar.jsx'
 import Home from './pages/Home.jsx'
 import CreatePost from './pages/CreatePost.jsx'
 import PostPage from './pages/PostPage.jsx'
+import Profile from './pages/Profile.jsx'
 import AuthModal from './components/AuthModal.jsx'
 import { useAuth } from './context/AuthContext.jsx'
 
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/" element={<Home selectedBrand={selectedBrand} />} />
         <Route path="/create" element={<CreatePost onAskAuth={() => setAuthOpen(true)} />} />
         <Route path="/post/:id" element={<PostPage onAskAuth={() => setAuthOpen(true)} />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
 
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />

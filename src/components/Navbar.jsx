@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { BRANDS } from '../utils/categories.js'
 import { motion } from 'framer-motion'
 import { FaPlusCircle } from 'react-icons/fa'
-import { MdLogin, MdLogout } from 'react-icons/md'
+import { MdLogin, MdLogout, MdPerson } from 'react-icons/md'
 
 export default function Navbar({ onOpenAuth, selectedBrand, setSelectedBrand }) {
   const { user, signOut } = useAuth()
@@ -30,9 +30,14 @@ export default function Navbar({ onOpenAuth, selectedBrand, setSelectedBrand }) 
               <FaPlusCircle className="mr-2" /> Create post
             </button>
             {user ? (
-              <button className="btn btn-outline" onClick={signOut} title="Sign out">
-                <MdLogout className="mr-2" /> Sign out
-              </button>
+              <>
+                <Link to="/profile" className="btn btn-outline" title="My Profile">
+                  <MdPerson className="mr-2" /> Profile
+                </Link>
+                <button className="btn btn-outline" onClick={signOut} title="Sign out">
+                  <MdLogout className="mr-2" /> Sign out
+                </button>
+              </>
             ) : (
               <button className="btn btn-primary" onClick={onOpenAuth} title="Sign in">
                 <MdLogin className="mr-2" /> Sign in

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { intentBadge } from '../utils/intents.js'
 import { timeAgo } from '../utils/format.js'
+import PostReactions from './PostReactions.jsx'
 
 export default function PostCard({ post }) {
   const cover = post.imageUrls?.[0]
@@ -40,6 +41,8 @@ export default function PostCard({ post }) {
           {post.side} · {post.color || '—'} · {post.location || 'Singapore'}
         </div>
         <div className="text-xs text-gray-500 mt-2">by {post.userDisplayName || 'Someone'}</div>
+        
+        <PostReactions postId={post.id} />
       </div>
     </motion.div>
   )
