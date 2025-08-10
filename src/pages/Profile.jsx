@@ -9,29 +9,68 @@ import toast from 'react-hot-toast'
 import Spinner from '../components/Spinner.jsx'
 
 export default function Profile() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!user) return
 
-    const q = query(
-      collection(db, 'posts'),
-      where('userId', '==', user.uid),
-      orderBy('createdAt', 'desc')
-    )
+    console.log('Profile: Setting up query for user:', user.uid)
+    
+    try {
+      // First try with orderBy
+      let q = query(
+        collection(db, 'posts'),
+        where('userId', '==', user.uid),
+        orderBy('createdAt', 'desc')
+      )
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const postsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-      setPosts(postsData)
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        console.log('Profile: Received snapshot with', snapshot.docs.length, 'posts')
+        const postsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+        setPosts(postsData)
+        setLoading(false)
+      }, (error) => {
+        console.error('Profile: Error with orderBy query:', error)
+        // If orderBy fails, try without it (for users with no posts)
+        if (error.code === 'failed-precondition') {
+          console.log('Profile: Trying query without orderBy')
+          const simpleQ = query(
+            collection(db, 'posts'),
+            where('userId', '==', user.uid)
+          )
+          
+          const simpleUnsubscribe = onSnapshot(simpleQ, (snapshot) => {
+            console.log('Profile: Simple query successful with', snapshot.docs.length, 'posts')
+            const postsData = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }))
+            setPosts(postsData)
+            setLoading(false)
+          }, (simpleError) => {
+            console.error('Profile: Simple query also failed:', simpleError)
+            setLoading(false)
+            toast.error('Failed to load posts')
+          })
+          
+          return () => simpleUnsubscribe()
+        } else {
+          setLoading(false)
+          toast.error('Failed to load posts')
+        }
+      })
+
+      return () => unsubscribe()
+    } catch (error) {
+      console.error('Profile: Error setting up query:', error)
       setLoading(false)
-    })
-
-    return () => unsubscribe()
+      toast.error('Failed to load posts')
+    }
   }, [user])
 
   const handleDeletePost = async (postId) => {
@@ -46,6 +85,14 @@ export default function Profile() {
     }
   }
 
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Spinner />
+      </div>
+    )
+  }
+
   if (!user) {
     return (
       <div className="container-narrow">
@@ -56,6 +103,8 @@ export default function Profile() {
       </div>
     )
   }
+
+  console.log('Profile: Rendering for user:', user.uid, 'Display name:', user.displayName)
 
   if (loading) {
     return (
