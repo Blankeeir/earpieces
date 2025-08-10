@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import LazyImage from './LazyImage.jsx'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi'
 
@@ -27,15 +28,19 @@ export default function ImageGallery({ images, title }) {
       <div className="space-y-3">
         {/* Main Image */}
         <div className="relative group">
-          <motion.img
-            key={selectedIndex}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            src={images[selectedIndex]}
-            alt={title}
-            className="w-full aspect-video rounded-xl object-cover cursor-pointer"
+          <motion.div key={selectedIndex} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+            <LazyImage
+              src={images[selectedIndex]}
+              alt={title}
+              className="w-full aspect-video rounded-xl cursor-pointer"
+              fetchPriority="high"
+              onLoad={() => {}}
+            />
+          </motion.div>
+          <button
             onClick={() => setIsModalOpen(true)}
+            className="absolute inset-0"
+            aria-label="Open image viewer"
           />
           
           {/* Navigation arrows on main image */}

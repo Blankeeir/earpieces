@@ -30,6 +30,7 @@ export default function PostForm({ onCreated }) {
   })
   const [images, setImages] = useState([])
   const [submitting, setSubmitting] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   const onChange = (key, val) => setData((d) => ({ ...d, [key]: val }))
 
@@ -77,12 +78,14 @@ export default function PostForm({ onCreated }) {
       // 2) Upload images (if any) then update doc
       let urls = []
       let failures = 0
+      const totalImages = images.length
       console.debug('[PostForm] Storage bucket (resolved)', {
         bucketFromEnv: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
         bucketFromAppOptions: storage?.app?.options?.storageBucket,
       })
       
-      for (const imageObj of images.slice(0, 6)) {
+      for (let i = 0; i < Math.min(images.length, 6); i++) {
+        const imageObj = images[i]
         try {
           const file = imageObj.file
           console.debug('[PostForm] Upload start', {
@@ -91,7 +94,10 @@ export default function PostForm({ onCreated }) {
             postId: refDoc.id,
           })
           const storageRef = ref(storage, `postImages/${user.uid}/${refDoc.id}/${file.name}`)
-          const uploadTask = uploadBytesResumable(storageRef, file, { contentType: file?.type })
+          const uploadTask = uploadBytesResumable(storageRef, file, {
+            contentType: file?.type || 'application/octet-stream',
+            cacheControl: 'public, max-age=31536000, immutable',
+          })
           
           await new Promise((resolve, reject) => {
             uploadTask.on('state_changed', (snapshot) => {
@@ -114,6 +120,10 @@ export default function PostForm({ onCreated }) {
           const url = await getDownloadURL(storageRef)
           console.debug('[PostForm] Upload complete; download URL obtained', { fileName: file?.name, url })
           urls.push(url)
+          
+          // Update progress
+          const completed = i + 1
+          setUploadProgress((completed / totalImages) * 100)
         } catch (err) {
           console.error('[PostForm] Skipping file due to error', {
             fileName: imageObj?.file?.name,
@@ -132,6 +142,24 @@ export default function PostForm({ onCreated }) {
         toast.error('No images were uploaded. Please try again.')
       }
 
+      // Reset form
+      setData({
+        brand: 'AirPods',
+        model: '',
+        side: 'Left',
+        color: '',
+        intention: 'looking',
+        price: '',
+        story: '',
+        contactEmail: '',
+        contactWhatsapp: '',
+        contactTelegram: '',
+        contactInstagram: '',
+        location: 'Singapore',
+      })
+      setImages([])
+      setUploadProgress(0)
+
       // confetti!
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } })
 
@@ -142,6 +170,7 @@ export default function PostForm({ onCreated }) {
       toast.error(`Failed to create post${e?.message ? `: ${e.message}` : ''}`)
     } finally {
       setSubmitting(false)
+      setUploadProgress(0)
     }
   }
 
@@ -209,14 +238,33 @@ export default function PostForm({ onCreated }) {
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-1">Photos (up to 6)</label>
-        <input className="input" type="file" multiple accept="image/*" onChange={(e) => setFiles(Array.from(e.target.files || []))} />
-        {files?.length > 0 && <div className="text-xs text-gray-600 mt-1">{files.length} selected</div>}
-      </div>
+      <ImageUploader
+        images={images}
+        onChange={setImages}
+        maxImages={6}
+      />
 
-      <motion.button whileTap={{ scale: 0.98 }} className="btn btn-primary" type="submit" disabled={submitting}>
-        {submitting ? 'Creating...' : 'Publish post'}
+      <motion.button 
+        whileTap={{ scale: 0.98 }} 
+        className="btn btn-primary relative overflow-hidden" 
+        type="submit" 
+        disabled={submitting}
+      >
+        {submitting ? (
+          <div className="flex items-center gap-2">
+            {images.length > 0 && uploadProgress > 0 ? (
+              <>
+                <span>Uploading images... {Math.round(uploadProgress)}%</span>
+                <div className="absolute bottom-0 left-0 h-1 bg-white/30 transition-all duration-300" 
+                     style={{ width: `${uploadProgress}%` }} />
+              </>
+            ) : (
+              'Creating post...'
+            )}
+          </div>
+        ) : (
+          'Publish post'
+        )}
       </motion.button>
     </form>
   )

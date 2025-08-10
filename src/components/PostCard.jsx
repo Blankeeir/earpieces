@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { intentBadge } from '../utils/intents.js'
 import { timeAgo } from '../utils/format.js'
 import PostReactions from './PostReactions.jsx'
+import LazyImage from './LazyImage.jsx'
 
 export default function PostCard({ post }) {
   const cover = post.imageUrls?.[0]
@@ -16,15 +17,12 @@ export default function PostCard({ post }) {
       <Link to={`/post/${post.id}`}>
         <div className="relative aspect-video bg-gray-100 overflow-hidden rounded-t-xl">
           {cover ? (
-            <img
+            <LazyImage
               src={cover}
               alt={post.model || post.brand}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              loading="lazy"
-              onError={(e) => {
-                e.target.style.display = 'none'
-                e.target.nextElementSibling.style.display = 'flex'
-              }}
+              className="w-full h-full transition-transform duration-500 group-hover:scale-105"
+              fetchPriority="low"
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             />
           ) : null}
           {!cover && (
