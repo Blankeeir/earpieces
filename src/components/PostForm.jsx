@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from 'firebase/firestore'
 import { db, storage } from '../firebase.js'
 import { BRANDS } from '../utils/categories.js'
@@ -42,6 +42,12 @@ export default function PostForm({ onCreated }) {
 
     setSubmitting(true)
     try {
+      console.debug('[PostForm] Submit start', {
+        userId: user?.uid,
+        filesCount: files?.length || 0,
+        projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+        storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+      })
       // 1) Create the doc to get an id
       const base = {
         userId: user.uid,
@@ -70,10 +76,41 @@ export default function PostForm({ onCreated }) {
       // 2) Upload images (if any) then update doc
       let urls = []
       for (const f of files.slice(0, 6)) {
-        const storageRef = ref(storage, `postImages/${user.uid}/${refDoc.id}/${f.name}`)
-        await uploadBytes(storageRef, f)
-        const url = await getDownloadURL(storageRef)
-        urls.push(url)
+        try {
+          console.debug('[PostForm] Upload start', {
+            fileName: f?.name,
+            fileSize: f?.size,
+            postId: refDoc.id,
+          })
+          const storageRef = ref(storage, `postImages/${user.uid}/${refDoc.id}/${f.name}`)
+          const uploadTask = uploadBytesResumable(storageRef, f)
+          await new Promise((resolve, reject) => {
+            uploadTask.on('state_changed', (snapshot) => {
+              const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
+              console.debug('[PostForm] Upload progress', {
+                fileName: f?.name,
+                state: snapshot.state,
+                progress,
+              })
+            }, (error) => {
+              console.error('[PostForm] Upload error', {
+                fileName: f?.name,
+                code: error?.code,
+                message: error?.message,
+              })
+              reject(error)
+            }, () => resolve())
+          })
+          const url = await getDownloadURL(storageRef)
+          console.debug('[PostForm] Upload complete; download URL obtained', { fileName: f?.name, url })
+          urls.push(url)
+        } catch (err) {
+          console.error('[PostForm] Skipping file due to error', {
+            fileName: f?.name,
+            code: err?.code,
+            message: err?.message,
+          })
+        }
       }
       await updateDoc(refDoc, { imageUrls: urls })
 
@@ -83,8 +120,8 @@ export default function PostForm({ onCreated }) {
       toast.success('Post created!')
       onCreated?.(refDoc.id)
     } catch (e) {
-      console.error(e)
-      toast.error('Failed to create post')
+      console.error('[PostForm] Submit failed', { code: e?.code, message: e?.message, name: e?.name })
+      toast.error(`Failed to create post${e?.message ? `: ${e.message}` : ''}`)
     } finally {
       setSubmitting(false)
     }
