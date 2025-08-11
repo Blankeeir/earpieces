@@ -1,0 +1,24 @@
+[debug] [2025-08-11T08:10:20.490Z] ----------------------------------------------------------------------
+[debug] [2025-08-11T08:10:20.492Z] Command:       /opt/homebrew/Cellar/node/23.6.0/bin/node /usr/local/bin/firebase deploy
+[debug] [2025-08-11T08:10:20.492Z] CLI Version:   13.10.0
+[debug] [2025-08-11T08:10:20.493Z] Platform:      darwin
+[debug] [2025-08-11T08:10:20.493Z] Node Version:  v23.6.0
+[debug] [2025-08-11T08:10:20.493Z] Time:          Mon Aug 11 2025 16:10:20 GMT+0800 (Singapore Standard Time)
+[debug] [2025-08-11T08:10:20.493Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-08-11T08:10:20.660Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-08-11T08:10:20.663Z] > authorizing via signed-in user (emmaxu2005@gmail.com)
+[debug] [2025-08-11T08:10:20.664Z] [iam] checking project earpieces-e9378 for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]
+[debug] [2025-08-11T08:10:20.673Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/earpieces-e9378:testIamPermissions [none]
+[debug] [2025-08-11T08:10:20.675Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/earpieces-e9378:testIamPermissions x-goog-quota-user=projects/earpieces-e9378
+[debug] [2025-08-11T08:10:20.675Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/earpieces-e9378:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2025-08-11T08:10:21.827Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/earpieces-e9378:testIamPermissions 200
+[debug] [2025-08-11T08:10:21.827Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/earpieces-e9378:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2025-08-11T08:10:21.828Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/earpieces-e9378 [none]
+[debug] [2025-08-11T08:10:22.217Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/earpieces-e9378 200
+[debug] [2025-08-11T08:10:22.217Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/earpieces-e9378 {"projectId":"earpieces-e9378","projectNumber":"579487903493","displayName":"earpieces","name":"projects/earpieces-e9378","resources":{"hostingSite":"earpieces-e9378"},"state":"ACTIVE","etag":"1_4f7ac421-fddc-47ef-8a93-38df6d900e4d"}
+[info] 
+[info] === Deploying to 'earpieces-e9378'...
+[info] 
+[info] i  deploying storage, firestore, hosting 
+[info] Running command: npm ci

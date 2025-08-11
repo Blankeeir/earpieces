@@ -76,19 +76,10 @@ export default function AuthModal({ open, onClose }) {
             className="glass-gradient rounded-3xl w-full max-w-md p-8 shadow-float border border-white/30"
           >
             {/* Header */}
-            <motion.div 
-              variants={contentVariants}
-              initial="hidden"
-              animate="visible"
-              className="text-center mb-8"
-            >
-              <motion.div 
-                className="w-16 h-16 bg-gradient-to-br from-neon-pink to-neon-purple rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-glow"
-                whileHover={{ rotate: 360, scale: 1.1 }}
-                transition={{ duration: 0.6 }}
-              >
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-gradient-to-br from-neon-pink to-neon-purple rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-glow">
                 <FaHeadphones className="text-white text-2xl" />
-              </motion.div>
+              </div>
               
               <h3 className="text-2xl font-black text-gradient-rainbow mb-2">
                 Welcome to Earpiece Matchmaker! 🎧
@@ -96,7 +87,7 @@ export default function AuthModal({ open, onClose }) {
               <p className="text-gray-600 text-sm">
                 Join thousands of people finding their perfect audio match! ✨
               </p>
-            </motion.div>
+            </div>
 
             {/* Tab switcher */}
             <motion.div 
