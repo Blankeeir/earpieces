@@ -4,64 +4,135 @@ import { intentBadge } from '../utils/intents.js'
 import { timeAgo } from '../utils/format.js'
 import PostReactions from './PostReactions.jsx'
 import LazyImage from './LazyImage.jsx'
+import { FaHeadphones, FaMapMarkerAlt, FaUser, FaClock } from 'react-icons/fa'
 
 export default function PostCard({ post }) {
   const cover = post.imageUrls?.[0]
+  
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    },
+    hover: {
+      y: -8,
+      scale: 1.02,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    }
+  }
+
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="card p-0 overflow-hidden group"
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      whileHover="hover"
+      className="card-neon p-0 overflow-hidden group cursor-pointer"
     >
       <Link to={`/post/${post.id}`}>
-        <div className="relative aspect-video bg-gray-100 overflow-hidden rounded-t-xl">
+        <div className="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden rounded-t-3xl">
           {cover ? (
             <LazyImage
               src={cover}
               alt={post.model || post.brand}
-              className="w-full h-full transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full transition-all duration-700 group-hover:scale-110"
               fetchPriority="low"
               sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             />
-          ) : null}
-          {!cover && (
+          ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400">
-              No photo
+              <FaHeadphones className="text-6xl opacity-30" />
             </div>
           )}
-          <div 
-            className="w-full h-full flex items-center justify-center text-gray-400" 
-            style={{ display: 'none' }}
-          >
-            Image unavailable
-          </div>
           
-          <div className="absolute top-2 left-2 badge bg-white/90 backdrop-blur-sm">{post.brand}</div>
-          <div className={`absolute top-2 right-2 badge ${intentBadge(post.intention)} backdrop-blur-sm`}>
+          {/* Brand badge */}
+          <motion.div 
+            className="absolute top-3 left-3 badge badge-primary shadow-glow"
+            whileHover={{ scale: 1.1 }}
+          >
+            {post.brand}
+          </motion.div>
+          
+          {/* Intent badge */}
+          <motion.div 
+            className={`absolute top-3 right-3 badge ${intentBadge(post.intention)} shadow-glow`}
+            whileHover={{ scale: 1.1 }}
+          >
             {post.intentionLabel}
-          </div>
+          </motion.div>
           
           {/* Image count indicator */}
           {post.imageUrls && post.imageUrls.length > 1 && (
-            <div className="absolute bottom-2 right-2 badge bg-black/50 text-white text-xs">
-              {post.imageUrls.length} photos
-            </div>
+            <motion.div 
+              className="absolute bottom-3 right-3 badge bg-black/70 text-white text-xs backdrop-blur-sm"
+              whileHover={{ scale: 1.1 }}
+            >
+              📸 {post.imageUrls.length} photos
+            </motion.div>
           )}
+          
+          {/* Hover overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
       </Link>
 
-      <div className="p-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold">{post.model || 'Unknown model'}</h3>
-          <div className="text-xs text-gray-500">{timeAgo(post.createdAt)}</div>
+      <div className="p-6">
+        {/* Title and time */}
+        <div className="flex items-start justify-between mb-3">
+          <h3 className="font-bold text-lg text-gray-800 group-hover:text-neon-pink transition-colors duration-300">
+            {post.model || 'Unknown model'}
+          </h3>
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <FaClock className="text-neon-purple" />
+            {timeAgo(post.createdAt)}
+          </div>
         </div>
-        <div className="text-sm text-gray-600 mt-1">
-          {post.side} · {post.color || '—'} · {post.location || 'Singapore'}
-        </div>
-        <div className="text-xs text-gray-500 mt-2">by {post.userDisplayName || 'Someone'}</div>
         
+        {/* Details */}
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="w-2 h-2 bg-neon-pink rounded-full"></div>
+            <span className="font-medium">{post.side}</span>
+            <span className="text-gray-400">•</span>
+            <span>{post.color || 'Color N/A'}</span>
+          </div>
+          
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <FaMapMarkerAlt className="text-neon-blue" />
+            <span>{post.location || 'Singapore'}</span>
+          </div>
+        </div>
+        
+        {/* User info */}
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+          <FaUser className="text-neon-green" />
+          <span>by <span className="font-medium text-gray-700">{post.userDisplayName || 'Anonymous'}</span></span>
+        </div>
+        
+        {/* Reactions */}
         <PostReactions postId={post.id} />
+        
+        {/* Fun call to action */}
+        <motion.div 
+          className="mt-4 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <div className="text-xs text-neon-pink font-semibold">
+            🎯 Click to see details and connect!
+          </div>
+        </motion.div>
       </div>
     </motion.div>
   )

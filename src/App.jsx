@@ -6,6 +6,7 @@ import CreatePost from './pages/CreatePost.jsx'
 import PostPage from './pages/PostPage.jsx'
 import Profile from './pages/Profile.jsx'
 import AuthModal from './components/AuthModal.jsx'
+import FloatingActionWidget from './components/FloatingActionWidget.jsx'
 import { useAuth } from './context/AuthContext.jsx'
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
       </Routes>
 
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      <FloatingActionWidget />
     </div>
   )
 }

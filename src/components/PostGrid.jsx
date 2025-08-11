@@ -8,6 +8,7 @@ export default function PostGrid({ selectedBrand }) {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [last, setLast] = useState(null)
+  const [lastBrand, setLastBrand] = useState('All')
   const [hasMore, setHasMore] = useState(true)
 
   const load = async (reset=false) => {
@@ -22,11 +23,15 @@ export default function PostGrid({ selectedBrand }) {
         const clauses = isFiltered
           ? [where('brand', '==', selectedBrand), orderBy('createdAt', 'desc'), commonLimit]
           : [orderBy('createdAt', 'desc'), commonLimit]
-        if (last && !reset) clauses.push(startAfter(last))
+        if (last && !reset && lastBrand === selectedBrand) clauses.push(startAfter(last))
         const q = query(baseRef, ...clauses)
         const snap = await getDocs(q)
-        const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        let items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        if (isFiltered) {
+          items = items.filter(it => it.brand === selectedBrand)
+        }
         setLast(snap.docs[snap.docs.length - 1])
+        setLastBrand(selectedBrand || 'All')
         if (reset) setPosts(items)
         else setPosts(prev => [...prev, ...items])
         setHasMore(items.length === 12)
@@ -34,10 +39,13 @@ export default function PostGrid({ selectedBrand }) {
         // Fallback when composite index is missing: drop orderBy and sort client-side.
         console.warn('[PostGrid] Indexed query failed; falling back without orderBy', err?.code || err)
         const clauses = isFiltered ? [where('brand', '==', selectedBrand), commonLimit] : [commonLimit]
-        if (last && !reset) clauses.push(startAfter(last))
+        if (last && !reset && lastBrand === selectedBrand) clauses.push(startAfter(last))
         const q = query(baseRef, ...clauses)
         const snap = await getDocs(q)
         let items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        if (isFiltered) {
+          items = items.filter(it => it.brand === selectedBrand)
+        }
         // Client-side sort by createdAt desc
         items.sort((a, b) => {
           const ad = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt || 0)
@@ -45,6 +53,7 @@ export default function PostGrid({ selectedBrand }) {
           return bd - ad
         })
         setLast(snap.docs[snap.docs.length - 1])
+        setLastBrand(selectedBrand || 'All')
         if (reset) setPosts(items)
         else setPosts(prev => [...prev, ...items])
         setHasMore(items.length === 12)
