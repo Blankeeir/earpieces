@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { FaPlusCircle, FaHeadphones } from 'react-icons/fa'
 import { MdLogin, MdLogout, MdPerson, MdSearch } from 'react-icons/md'
 
-export default function Navbar({ onOpenAuth, selectedBrand, setSelectedBrand }) {
+export default function Navbar({ onOpenAuth, selectedBrand, setSelectedBrand, authOpen = false }) {
   const { user, signOut } = useAuth()
   const nav = useNavigate()
   const loc = useLocation()
@@ -107,8 +107,8 @@ export default function Navbar({ onOpenAuth, selectedBrand, setSelectedBrand }) 
           </div>
         </motion.div>
 
-        {/* Category bar - only show on home page */}
-        {loc.pathname === '/' && (
+        {/* Category bar - only show on home page and when auth modal is closed */}
+        {loc.pathname === '/' && !authOpen && (
           <motion.div 
             variants={itemVariants}
             className="mx-auto px-4 sm:px-6 py-4 glass rounded-3xl shadow-soft max-w-5xl"

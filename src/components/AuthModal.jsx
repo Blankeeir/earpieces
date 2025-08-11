@@ -60,18 +60,11 @@ export default function AuthModal({ open, onClose }) {
   return (
     <AnimatePresence>
       {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+        <div
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={onClose}
         >
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
+          <div
             onClick={(e) => e.stopPropagation()}
             className="glass-gradient rounded-3xl w-full max-w-md p-8 shadow-float border border-white/30"
           >
@@ -81,7 +74,7 @@ export default function AuthModal({ open, onClose }) {
                 <FaHeadphones className="text-white text-2xl" />
               </div>
               
-              <h3 className="text-2xl font-black text-gradient-rainbow mb-2">
+              <h3 className="text-2xl font-black text-gradient mb-2">
                 Welcome to Earpiece Matchmaker! 🎧
               </h3>
               <p className="text-gray-600 text-sm">
@@ -90,12 +83,7 @@ export default function AuthModal({ open, onClose }) {
             </div>
 
             {/* Tab switcher */}
-            <motion.div 
-              variants={contentVariants}
-              initial="hidden"
-              animate="visible"
-              className="flex items-center gap-2 mb-6 bg-gray-100/50 rounded-2xl p-1"
-            >
+            <div className="flex items-center gap-2 mb-6 bg-gray-100/50 rounded-2xl p-1">
               <motion.button 
                 className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 ${
                   tab === 'signin' 
@@ -120,15 +108,10 @@ export default function AuthModal({ open, onClose }) {
               >
                 Sign Up
               </motion.button>
-            </motion.div>
+            </div>
 
             {/* Form */}
-            <motion.div 
-              variants={contentVariants}
-              initial="hidden"
-              animate="visible"
-              className="space-y-4"
-            >
+            <div className="space-y-4">
               {tab === 'signup' && (
                 <motion.input 
                   className="input"
@@ -201,22 +184,17 @@ export default function AuthModal({ open, onClose }) {
               >
                 <FcGoogle className="mr-2 text-lg" /> Continue with Google
               </motion.button>
-            </motion.div>
+            </div>
 
             {/* Fun footer */}
-            <motion.div 
-              variants={contentVariants}
-              initial="hidden"
-              animate="visible"
-              className="text-center mt-6 pt-6 border-t border-gray-200"
-            >
+            <div className="text-center mt-6 pt-6 border-t border-gray-200">
               <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
                 <FaHeart className="text-neon-pink animate-pulse" />
                 <span>Join the <span className="font-semibold text-neon-pink">#EarpieceMatchmakers</span> community!</span>
               </div>
-            </motion.div>
-          </motion.div>
-        </motion.div>
+            </div>
+          </div>
+        </div>
       )}
     </AnimatePresence>
   )

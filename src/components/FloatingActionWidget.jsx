@@ -24,7 +24,8 @@ export default function FloatingActionWidget() {
       icon: FaHeart,
       label: 'My Favorites',
       color: 'from-neon-purple to-neon-pink',
-      action: () => navigate('/favorites')
+      // Accept both 'favorites' and 'favourites' by normalizing to 'favorites'
+      action: () => navigate('/profile?tab=favorites')
     }
   ]
 

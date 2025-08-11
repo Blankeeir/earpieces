@@ -4,10 +4,12 @@ import { intentBadge } from '../utils/intents.js'
 import { timeAgo } from '../utils/format.js'
 import PostReactions from './PostReactions.jsx'
 import LazyImage from './LazyImage.jsx'
-import { FaHeadphones, FaMapMarkerAlt, FaUser, FaClock } from 'react-icons/fa'
+import { useFavorites } from '../context/FavoritesContext.jsx'
+import { FaHeadphones, FaMapMarkerAlt, FaUser, FaClock, FaHeart } from 'react-icons/fa'
 
 export default function PostCard({ post }) {
   const cover = post.imageUrls?.[0]
+  const { toggleFavorite, isFavorited } = useFavorites()
   
   const cardVariants = {
     hidden: { opacity: 0, y: 20, scale: 0.95 },
@@ -39,8 +41,8 @@ export default function PostCard({ post }) {
       whileHover="hover"
       className="card-neon p-0 overflow-hidden group cursor-pointer"
     >
-      <Link to={`/post/${post.id}`}>
-        <div className="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden rounded-t-3xl">
+      <div className="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden rounded-t-3xl">
+        <Link to={`/post/${post.id}`} className="block w-full h-full">
           {cover ? (
             <LazyImage
               src={cover}
@@ -55,36 +57,55 @@ export default function PostCard({ post }) {
             </div>
           )}
           
-          {/* Brand badge */}
+          {/* Hover overlay (non-interactive so it doesn't block buttons) */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        </Link>
+        
+        {/* Brand badge */}
+        <motion.div 
+          className="absolute top-3 left-3 badge badge-primary shadow-glow"
+          whileHover={{ scale: 1.1 }}
+        >
+          {post.brand}
+        </motion.div>
+        
+        {/* Intent badge */}
+        <motion.div 
+          className={`absolute top-3 right-3 badge ${intentBadge(post.intention)} shadow-glow`}
+          whileHover={{ scale: 1.1 }}
+        >
+          {post.intentionLabel}
+        </motion.div>
+        
+        {/* Favorite heart button */}
+        <motion.button 
+          className={`absolute bottom-3 left-3 w-10 h-10 rounded-full backdrop-blur-sm border-2 flex items-center justify-center transition-all duration-300 z-30 ${
+            isFavorited(post.id) 
+              ? 'bg-neon-pink/90 border-neon-pink text-white shadow-glow' 
+              : 'bg-white/80 border-white/50 text-gray-600 hover:bg-neon-pink/20 hover:border-neon-pink hover:text-neon-pink'
+          }`}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            toggleFavorite(post.id)
+          }}
+          title={isFavorited(post.id) ? 'Remove from favorites' : 'Add to favorites'}
+        >
+          <FaHeart className="text-sm" />
+        </motion.button>
+
+        {/* Image count indicator */}
+        {post.imageUrls && post.imageUrls.length > 1 && (
           <motion.div 
-            className="absolute top-3 left-3 badge badge-primary shadow-glow"
+            className="absolute bottom-3 right-3 badge bg-black/70 text-white text-xs backdrop-blur-sm"
             whileHover={{ scale: 1.1 }}
           >
-            {post.brand}
+            📸 {post.imageUrls.length} photos
           </motion.div>
-          
-          {/* Intent badge */}
-          <motion.div 
-            className={`absolute top-3 right-3 badge ${intentBadge(post.intention)} shadow-glow`}
-            whileHover={{ scale: 1.1 }}
-          >
-            {post.intentionLabel}
-          </motion.div>
-          
-          {/* Image count indicator */}
-          {post.imageUrls && post.imageUrls.length > 1 && (
-            <motion.div 
-              className="absolute bottom-3 right-3 badge bg-black/70 text-white text-xs backdrop-blur-sm"
-              whileHover={{ scale: 1.1 }}
-            >
-              📸 {post.imageUrls.length} photos
-            </motion.div>
-          )}
-          
-          {/* Hover overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        </div>
-      </Link>
+        )}
+      </div>
 
       <div className="p-6">
         {/* Title and time */}

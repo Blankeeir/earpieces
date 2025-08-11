@@ -27,6 +27,7 @@ export default function App() {
         onOpenAuth={() => setAuthOpen(true)}
         selectedBrand={selectedBrand}
         setSelectedBrand={setSelectedBrand}
+        authOpen={authOpen}
       />
 
       <Routes>

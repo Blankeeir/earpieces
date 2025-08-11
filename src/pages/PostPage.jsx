@@ -10,6 +10,8 @@ import PostReactions from '../components/PostReactions.jsx'
 import ImageGallery from '../components/ImageGallery.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { motion } from 'framer-motion'
+import { FaHeart } from 'react-icons/fa'
+import { useFavorites } from '../context/FavoritesContext.jsx'
 
 export default function PostPage() {
   const { id } = useParams()
@@ -17,6 +19,7 @@ export default function PostPage() {
   const [loading, setLoading] = useState(true)
   const [reportOpen, setReportOpen] = useState(false)
   const { user } = useAuth()
+  const { toggleFavorite, isFavorited } = useFavorites()
 
   useEffect(() => {
     (async () => {
@@ -73,6 +76,16 @@ export default function PostPage() {
             <PostReactions postId={post.id} />
             
             <div className="mt-6 flex gap-2">
+              <motion.button
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => toggleFavorite(post.id)}
+                className={`btn ${isFavorited(post.id) ? 'btn-primary' : 'btn-outline'}`}
+                title={isFavorited(post.id) ? 'Remove from favorites' : 'Add to favorites'}
+              >
+                <FaHeart className="mr-2" />
+                {isFavorited(post.id) ? 'Favorited' : 'Add to Favorites'}
+              </motion.button>
               <motion.button whileTap={{ scale: 0.98 }} className="btn btn-outline" onClick={() => setReportOpen(true)}>
                 Report
               </motion.button>

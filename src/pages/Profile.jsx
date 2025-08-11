@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useFavorites } from '../context/FavoritesContext.jsx'
 import { db } from '../firebase.js'
 import { collection, query, where, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore'
 import { motion } from 'framer-motion'
@@ -7,11 +8,25 @@ import { timeAgo } from '../utils/format.js'
 import { intentBadge } from '../utils/intents.js'
 import toast from 'react-hot-toast'
 import Spinner from '../components/Spinner.jsx'
+import FavoritePosts from '../components/FavoritePosts.jsx'
+import { useSearchParams } from 'react-router-dom'
 
 export default function Profile() {
   const { user, loading: authLoading } = useAuth()
+  const { favorites } = useFavorites()
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [activeTab, setActiveTab] = useState('posts')
+
+  // Check for tab query parameter
+  useEffect(() => {
+    const tabParam = searchParams.get('tab')
+    // Support both spelling variants: favorites / favourites
+    if (tabParam === 'favorites' || tabParam === 'favourites') {
+      setActiveTab('favorites')
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (!user) return
@@ -128,64 +143,95 @@ export default function Profile() {
         </div>
 
         <div className="border-t pt-6">
-          <h2 className="text-xl font-semibold mb-4">My Posts ({posts.length})</h2>
-          
-          {posts.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>You haven't created any posts yet.</p>
-              <a href="/create" className="text-sky-600 hover:underline">Create your first post</a>
-            </div>
+          {/* Tab navigation */}
+          <div className="flex items-center gap-2 mb-6 bg-gray-100/50 rounded-2xl p-1">
+            <motion.button 
+              className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 ${
+                activeTab === 'posts' 
+                  ? 'bg-white text-neon-pink shadow-soft' 
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+              onClick={() => setActiveTab('posts')}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              My Posts ({posts.length})
+            </motion.button>
+            <motion.button 
+              className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 ${
+                activeTab === 'favorites' 
+                  ? 'bg-white text-neon-pink shadow-soft' 
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+              onClick={() => setActiveTab('favorites')}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Favorites ❤️ ({favorites.length})
+            </motion.button>
+          </div>
+
+          {/* Tab content */}
+          {activeTab === 'posts' ? (
+            posts.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p>You haven't created any posts yet.</p>
+                <a href="/create" className="text-sky-600 hover:underline">Create your first post</a>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {posts.map((post) => (
+                  <motion.div
+                    key={post.id}
+                    layout
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-xl p-4 border border-gray-200"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                        {post.imageUrls?.[0] ? (
+                          <img
+                            src={post.imageUrls[0]}
+                            alt={post.model}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">No photo</div>
+                        )}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold truncate">{post.model || post.brand}</h3>
+                          <span className={`badge ${intentBadge(post.intention)}`}>
+                            {post.intentionLabel}
+                          </span>
+                        </div>
+                        
+                        <div className="text-sm text-gray-600 mb-2">
+                          {post.brand} · {post.side} · {post.color || '—'} · {post.location || 'Singapore'}
+                        </div>
+                        
+                        <div className="text-xs text-gray-500">
+                          Posted {timeAgo(post.createdAt)}
+                        </div>
+                      </div>
+                      
+                      <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleDeletePost(post.id)}
+                        className="btn btn-outline btn-sm text-red-600 border-red-300 hover:bg-red-50"
+                      >
+                        Delete
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )
           ) : (
-            <div className="space-y-4">
-              {posts.map((post) => (
-                <motion.div
-                  key={post.id}
-                  layout
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-white rounded-xl p-4 border border-gray-200"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                      {post.imageUrls?.[0] ? (
-                        <img
-                          src={post.imageUrls[0]}
-                          alt={post.model}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">No photo</div>
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold truncate">{post.model || post.brand}</h3>
-                        <span className={`badge ${intentBadge(post.intention)}`}>
-                          {post.intentionLabel}
-                        </span>
-                      </div>
-                      
-                      <div className="text-sm text-gray-600 mb-2">
-                        {post.brand} · {post.side} · {post.color || '—'} · {post.location || 'Singapore'}
-                      </div>
-                      
-                      <div className="text-xs text-gray-500">
-                        Posted {timeAgo(post.createdAt)}
-                      </div>
-                    </div>
-                    
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleDeletePost(post.id)}
-                      className="btn btn-outline btn-sm text-red-600 border-red-300 hover:bg-red-50"
-                    >
-                      Delete
-                    </motion.button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            <FavoritePosts />
           )}
         </div>
       </div>
